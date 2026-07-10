@@ -82,8 +82,19 @@ export default function AutocompleteInput({
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
           const data = await res.json();
-          if (data && data.display_name) {
-            onChange(data.display_name);
+          if (data && data.address) {
+            const house = data.address.house_number || '';
+            const road = data.address.road || '';
+            const street = [house, road].filter(Boolean).join(' ');
+            if (street) {
+              onChange(street);
+            } else if (data.name) {
+              onChange(data.name);
+            } else {
+              onChange(data.display_name.split(',')[0]);
+            }
+          } else if (data && data.display_name) {
+            onChange(data.display_name.split(',')[0]);
           } else {
             onChange("Current Location");
           }
@@ -143,15 +154,33 @@ export default function AutocompleteInput({
             {isLoading ? (
               <div className="p-5 text-center text-gray-400 text-sm font-medium">Searching...</div>
             ) : results.length > 0 ? (
-              results.map((res) => {
-                const parts = res.display_name.split(", ");
-                const title = res.name || parts[0];
-                const subtitle = parts.slice(1).join(", ");
+              results.map((res: any) => {
+                // Better address parsing
+                let title = res.name;
+                let subtitle = res.display_name;
+                
+                if (res.address) {
+                  const house = res.address.house_number || '';
+                  const road = res.address.road || '';
+                  const street = [house, road].filter(Boolean).join(' ');
+                  if (street) {
+                    title = street;
+                    // Remove the street part from the subtitle if possible
+                    const parts = res.display_name.split(', ');
+                    // Usually the first 1 or 2 parts are the house/road
+                    subtitle = parts.slice(house && road ? 2 : 1).join(', ');
+                  }
+                }
+                if (!title) {
+                  const parts = res.display_name.split(', ');
+                  title = parts[0];
+                  subtitle = parts.slice(1).join(', ');
+                }
                 
                 return (
                   <div
                     key={res.place_id}
-                    onClick={() => handleSelect(res.display_name)}
+                    onClick={() => handleSelect(title)}
                     className="px-5 py-4 hover:bg-gray-50 cursor-pointer flex items-center gap-4 border-b border-gray-50 last:border-b-0"
                   >
                     <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">

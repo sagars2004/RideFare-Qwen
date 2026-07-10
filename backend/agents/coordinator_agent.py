@@ -66,6 +66,27 @@ class CoordinatorAgent:
                     is_excluded = True
                     continue
                     
+            # State-Based AV Validation
+            valid_av_states = ["California", "Arizona", "Texas", "Nevada", "CA", "AZ", "TX", "NV"]
+            av_providers = ["waymo", "robotaxi"]
+            if bid.provider in av_providers:
+                pickup = request_context.get("pickup", "")
+                if pickup:
+                    is_av_supported = any(state in pickup for state in valid_av_states)
+                    if not is_av_supported:
+                        # Attempt to extract the state name for the error message
+                        parts = [p.strip() for p in pickup.split(",")]
+                        extracted_state = "your state"
+                        if len(parts) >= 3 and "United States" in parts[-1]:
+                            extracted_state = parts[-3]
+                        
+                        excluded.append(ExcludedProvider(
+                            provider=bid.provider,
+                            reason=f"is not yet available in the state of {extracted_state}"
+                        ))
+                        is_excluded = True
+                        continue
+
             if not is_excluded:
                 valid_bids.append(bid)
                 
