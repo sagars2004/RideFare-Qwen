@@ -2,6 +2,9 @@ import os
 import json
 import requests
 from typing import Any, Dict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_qwen_api_key():
     return os.environ.get("QWEN_API_KEY") or os.environ.get("DASHSCOPE_API_KEY")
@@ -11,7 +14,7 @@ def call_qwen_json(prompt: str, system_prompt: str = "You are a helpful assistan
     if not api_key:
         raise ValueError("QWEN_API_KEY environment variable is not set.")
         
-    url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+    url = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"

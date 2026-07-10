@@ -116,11 +116,21 @@ Constraints & Preferences:
         
         response_dict = call_qwen_json(prompt=prompt, system_prompt=system_prompt, model="qwen-max")
         
+        # Robust LLM output coercion
+        rank = response_dict.get("rank", [])
+        if isinstance(rank, str):
+            rank = [rank]
+            
+        conflicts_list = response_dict.get("conflicts_detected", [])
+        for c in conflicts_list:
+            if isinstance(c.get("providers"), str):
+                c["providers"] = [c["providers"]]
+        
         return CoordinatorDecisionObject(
-            recommended_provider=response_dict["recommended_provider"],
-            rank=response_dict.get("rank", []),
+            recommended_provider=response_dict.get("recommended_provider", "uber"),
+            rank=rank,
             excluded=excluded,
-            conflicts_detected=[ConflictDetected(**c) for c in response_dict.get("conflicts_detected", [])],
-            rationale=response_dict["rationale"],
-            negotiation_trace=response_dict["negotiation_trace"]
+            conflicts_detected=[ConflictDetected(**c) for c in conflicts_list],
+            rationale=response_dict.get("rationale", ""),
+            negotiation_trace=response_dict.get("negotiation_trace", [])
         )

@@ -1,221 +1,138 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import AutocompleteInput from "@/components/AutocompleteInput";
 
 export default function Home() {
+  const router = useRouter();
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
-  
-  const [loading, setLoading] = useState(false);
-  const [decision, setDecision] = useState<any>(null);
-  const [traceVisibleIndex, setTraceVisibleIndex] = useState(-1);
 
-  const handleRequestRide = async () => {
-    setLoading(true);
-    setDecision(null);
-    setTraceVisibleIndex(-1);
-
-    // Combine structured fields into a single natural language intent for the Constraint Agent
-    const intent = `Pickup: ${pickup}. Dropoff: ${dropoff}. ${specialRequests}`;
-
-    try {
-      const res = await fetch("http://localhost:8000/api/negotiate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rider_intent: intent }),
-      });
-      const data = await res.json();
-      setDecision(data);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to negotiate ride. Check if backend is running.");
-    } finally {
-      setLoading(false);
-    }
+  const handleRequestRide = () => {
+    const params = new URLSearchParams();
+    if (pickup) params.set("pickup", pickup);
+    if (dropoff) params.set("dropoff", dropoff);
+    if (specialRequests) params.set("requests", specialRequests);
+    
+    router.push(`/results?${params.toString()}`);
   };
 
-  useEffect(() => {
-    if (decision && decision.negotiation_trace) {
-      const interval = setInterval(() => {
-        setTraceVisibleIndex((prev) => {
-          if (prev < decision.negotiation_trace.length - 1) {
-            return prev + 1;
-          }
-          clearInterval(interval);
-          return prev;
-        });
-      }, 1500); // 1.5s per trace line fade in
-      return () => clearInterval(interval);
-    }
-  }, [decision]);
-
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-gray-900">
-      {/* Header (optional minimal header could go here) */}
+    <div className="min-h-screen bg-white font-sans text-black overflow-x-hidden flex flex-col">
+      {/* Header */}
+      <header className="w-full py-6 px-12 font-bold text-3xl tracking-tighter">RideFare</header>
 
-      <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-6 lg:p-12 gap-12">
-        {/* Left panel: Input (Uber.com style) */}
-        <div className="w-full md:w-[450px] flex flex-col shrink-0 pt-8">
-          <h1 className="text-5xl font-bold mb-8 tracking-tight text-black">
-            Go anywhere with RideFare
-          </h1>
+      {/* Main Hero Section */}
+      <main className="max-w-[1150px] w-full mx-auto pt-10 px-6 pb-20 flex-1">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 h-full items-center">
           
-          <div className="space-y-4 mb-6">
-            <button className="bg-gray-100 hover:bg-gray-200 text-black font-medium py-2.5 px-4 rounded-full flex items-center gap-2 transition-colors w-fit">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-              Pickup now
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
+          {/* Left Panel: Booking Form */}
+          <div className="w-full lg:w-[480px] shrink-0">
+            <h1 className="text-[56px] font-bold leading-tight mb-8 tracking-[-0.04em]">
+              Go anywhere with RideFare
+            </h1>
             
-            <div className="relative flex flex-col gap-2">
-              {/* Vertical line connecting the dots */}
-              <div className="absolute left-[19px] top-6 bottom-6 w-0.5 bg-gray-300 z-0"></div>
+            <div className="mb-6">
+              <button className="bg-[#EEEEEE] hover:bg-[#E2E2E2] text-black font-medium py-2.5 px-4 rounded-full flex items-center gap-2 transition-colors mb-6 text-[15px]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.2 14.8L11 11.6V6h2v4.6l4.4 4.4-1.2 1.8z"/>
+                </svg>
+                Pickup now
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
               
-              <div className="relative z-10 flex items-center">
-                <div className="absolute left-4 w-2 h-2 bg-black rounded-full"></div>
-                <input
-                  type="text"
-                  placeholder="Pickup location"
-                  value={pickup}
-                  onChange={(e) => setPickup(e.target.value)}
-                  className="w-full bg-gray-100 border-none rounded-lg p-3.5 pl-10 text-base focus:ring-2 focus:ring-black outline-none placeholder-gray-500"
-                />
-                <div className="absolute right-4 text-gray-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                </div>
-              </div>
-
-              <div className="relative z-10 flex items-center">
-                <div className="absolute left-3.5 w-3 h-3 border-2 border-black bg-white"></div>
-                <input
-                  type="text"
-                  placeholder="Dropoff location"
-                  value={dropoff}
-                  onChange={(e) => setDropoff(e.target.value)}
-                  className="w-full bg-gray-100 border-none rounded-lg p-3.5 pl-10 text-base focus:ring-2 focus:ring-black outline-none placeholder-gray-500"
-                />
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">Special Requests / Preferences</label>
-              <textarea
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none placeholder-gray-400"
-                rows={2}
-                value={specialRequests}
-                onChange={(e) => setSpecialRequests(e.target.value)}
-                placeholder="E.g. No Robotaxis, I don't trust them. Need to arrive by 7:15 PM."
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-6 mt-2">
-            <button
-              onClick={handleRequestRide}
-              disabled={loading || (!pickup && !specialRequests)}
-              className="bg-black text-white font-semibold py-3.5 px-6 rounded-lg hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
-            >
-              {loading ? "Negotiating..." : "See prices"}
-            </button>
-            <button className="text-gray-900 font-medium hover:bg-gray-100 py-2 px-4 rounded-lg transition-colors text-sm">
-              Log in to see your recent activity
-            </button>
-          </div>
-        </div>
-
-        {/* Right panel: Results & Trace OR Promo Image */}
-        <div className="flex-1 w-full bg-gray-50 rounded-2xl overflow-hidden relative min-h-[500px]">
-          {decision ? (
-            <div className="absolute inset-0 overflow-y-auto p-6 md:p-8 flex flex-col gap-6">
-              {/* Negotiation Trace Panel */}
-              <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                  Live Negotiation Trace
-                </h2>
-                <div className="space-y-3 font-mono text-sm">
-                  {decision.negotiation_trace.map((traceLine: string, idx: number) => (
-                    <div
-                      key={idx}
-                      className={`transition-all duration-1000 p-3 rounded-lg ${
-                        idx <= traceVisibleIndex ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 hidden"
-                      } ${
-                        traceLine.includes("Constraint Agent") ? "bg-red-50 text-red-700" :
-                        traceLine.includes("Coordinator") ? "bg-green-50 text-green-700" :
-                        "bg-blue-50 text-blue-700"
-                      }`}
-                    >
-                      {traceLine}
-                    </div>
-                  ))}
-                  {traceVisibleIndex < decision.negotiation_trace.length - 1 && (
-                    <div className="text-gray-400 animate-pulse mt-2 p-3">...</div>
-                  )}
-                </div>
+              <div className="relative flex flex-col gap-3">
+                {/* Connecting Line */}
+                <div className="absolute left-[22.5px] top-[24px] bottom-[24px] w-[2px] bg-gray-300 z-0"></div>
                 
-                {traceVisibleIndex === decision.negotiation_trace.length - 1 && (
-                  <div className="mt-6 p-4 bg-gray-900 text-white rounded-xl transition-opacity duration-1000 opacity-100">
-                    <p className="font-semibold text-sm mb-1">Coordinator Rationale</p>
-                    <p className="text-sm opacity-90">{decision.rationale}</p>
+                <div className="relative z-10 flex items-center">
+                  <div className="absolute left-4 flex justify-center items-center w-6 h-6 z-10">
+                    <div className="w-2 h-2 bg-black rounded-full"></div>
                   </div>
-                )}
-              </div>
+                  <AutocompleteInput
+                    placeholder="Pickup location"
+                    value={pickup}
+                    onChange={setPickup}
+                    className="pl-12"
+                    showCurrentLocation={true}
+                  />
+                </div>
 
-              {/* Results List */}
-              <div className="bg-white rounded-2xl shadow-sm p-2 border border-gray-100 transition-opacity duration-1000">
-                <h2 className="text-lg font-bold p-4 pb-2">Recommended Rides</h2>
-                <div className="divide-y divide-gray-100">
-                  {/* Render Ranked Options */}
-                  {decision.rank.map((provider: string, idx: number) => (
-                    <div key={provider} className={`p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors ${idx === 0 ? 'bg-blue-50/50' : ''}`}>
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center font-bold text-gray-500 capitalize">
-                          {provider.substring(0, 2)}
-                        </div>
-                        <div>
-                          <div className="font-bold capitalize text-lg flex items-center gap-2">
-                            {provider}
-                            {idx === 0 && <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-semibold">Best Choice</span>}
-                          </div>
-                          <div className="text-sm text-gray-500">Selected based on your preferences</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Render Excluded Options */}
-                  {decision.excluded.map((exc: any) => (
-                    <div key={exc.provider} className="p-4 flex items-center justify-between opacity-50 bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center font-bold text-gray-400 capitalize">
-                          {exc.provider.substring(0, 2)}
-                        </div>
-                        <div>
-                          <div className="font-bold capitalize text-lg text-gray-500 line-through">
-                            {exc.provider}
-                          </div>
-                          <div className="text-sm text-red-500 font-medium">
-                            Excluded: {exc.reason}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="relative z-10 flex items-center">
+                  <div className="absolute left-4 flex justify-center items-center w-6 h-6 z-10">
+                    <div className="w-[10px] h-[10px] bg-black"></div>
+                  </div>
+                  <AutocompleteInput
+                    placeholder="Dropoff location"
+                    value={dropoff}
+                    onChange={setDropoff}
+                    className="pl-12"
+                  />
                 </div>
               </div>
+
+              <div className="pt-3">
+                <input
+                  type="text"
+                  placeholder="Special requests (e.g. No Robotaxis, arrive by 7pm)"
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  className="w-full bg-[#F3F3F3] border-none rounded-lg p-4 text-base outline-none placeholder-gray-500 font-medium focus:ring-2 focus:ring-black transition-shadow"
+                />
+              </div>
             </div>
-          ) : (
-            <div className="absolute inset-0 bg-yellow-400 flex flex-col items-center justify-center text-center p-8">
-               <h3 className="text-3xl font-bold text-black mb-4">Ready to travel?</h3>
-               <p className="text-black font-medium opacity-80 mb-6">Enter your pickup and dropoff to let our agents negotiate the best fare.</p>
-               {loading && <div className="animate-pulse font-bold bg-black text-white px-6 py-3 rounded-full">Agents Negotiating...</div>}
+            
+            <div className="flex items-center gap-6 mt-6">
+              <button
+                onClick={handleRequestRide}
+                disabled={!pickup && !specialRequests}
+                className="bg-black text-white font-medium py-3.5 px-6 rounded-lg hover:bg-gray-800 disabled:bg-gray-400 transition-colors text-base"
+              >
+                See prices
+              </button>
+              <button className="text-black font-medium hover:underline text-[15px]">
+                Log in to see your recent activity
+              </button>
             </div>
-          )}
+          </div>
+
+          {/* Right Panel: Hero Image permanently */}
+          <div className="flex-1 w-full h-[500px] relative rounded-xl overflow-hidden shadow-sm">
+            <img 
+              src="/hero.png" 
+              alt="Travel luggage" 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
         </div>
-      </div>
+
+        {/* Explore Section */}
+        <div className="mt-24">
+          <h2 className="text-3xl font-bold mb-8 tracking-tight">Explore what you can do with RideFare</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-[#F3F3F3] rounded-2xl p-6 h-48 relative overflow-hidden group cursor-pointer">
+              <h3 className="text-xl font-bold mb-2">Ride</h3>
+              <p className="text-sm text-gray-600 max-w-[180px]">Go anywhere with RideFare. Request a ride, hop in, and go.</p>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform"></div>
+            </div>
+            <div className="bg-[#F3F3F3] rounded-2xl p-6 h-48 relative overflow-hidden group cursor-pointer">
+              <h3 className="text-xl font-bold mb-2">Reserve</h3>
+              <p className="text-sm text-gray-600 max-w-[180px]">Reserve your ride in advance so you can relax on the day of your trip.</p>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform"></div>
+            </div>
+            <div className="bg-[#F3F3F3] rounded-2xl p-6 h-48 relative overflow-hidden group cursor-pointer">
+              <h3 className="text-xl font-bold mb-2">Rental Cars</h3>
+              <p className="text-sm text-gray-600 max-w-[180px]">Your perfect rental car is a few clicks away.</p>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform"></div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
