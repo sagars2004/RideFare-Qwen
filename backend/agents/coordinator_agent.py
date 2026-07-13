@@ -102,7 +102,7 @@ Your job is to:
 3. Rank the valid providers from best to worst.
 4. Select the best provider as 'recommended_provider'.
 5. Provide a step-by-step negotiation trace (array of strings, each representing an agent's argument or the coordinator's decision).
-6. Provide a final natural-language rationale.
+6. Provide a short, punchy final natural-language rationale (maximum 2 sentences).
 
 Output MUST be a JSON object exactly matching this schema:
 {

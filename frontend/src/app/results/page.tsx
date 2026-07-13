@@ -38,6 +38,7 @@ function ResultsContent() {
   // Auth State from Context
   const { user, setShowAuthModal } = useAuth();
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   // Helper for branded logos
   const getProviderLogo = (providerName: string, isExcluded: boolean = false) => {
@@ -107,6 +108,17 @@ function ResultsContent() {
       setBookingSuccess(true); // show success anyway for demo
     }
   };
+
+  useEffect(() => {
+    if (isConfirming) {
+      const timer = setTimeout(() => {
+        handleCheckout();
+        setIsConfirming(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConfirming]); 
 
   useEffect(() => {
     if (decision && !decision.detail) {
@@ -242,7 +254,14 @@ function ResultsContent() {
                 {selectedTier && !loadingTiers && (
                    <div className="mt-4 pt-4 border-t border-gray-100 sticky bottom-0 bg-white pb-4 z-10">
                      <button 
-                       onClick={() => user ? setBookingStep("checkout") : setShowAuthModal(true)}
+                       onClick={() => {
+                         if (user) {
+                           setBookingStep("checkout");
+                           setIsConfirming(true);
+                         } else {
+                           setShowAuthModal(true);
+                         }
+                       }}
                        className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg shadow-lg relative overflow-hidden group"
                      >
                        <span className="relative z-10">Confirm {selectedTier.name}</span>
@@ -367,16 +386,16 @@ function ResultsContent() {
         </div>
 
         {/* Right Column (Trace Log replacing Map) */}
-        <div className="flex-1 bg-[#F5F7F9] rounded-2xl p-6 relative h-[calc(100vh-140px)] border border-gray-200 shadow-inner overflow-hidden">
-          <h2 className="text-lg font-bold mb-6 flex items-center gap-3 sticky top-0 bg-[#F5F7F9] pb-4 z-10 border-b border-gray-200">
+        <div className="flex-1 bg-[#F5F7F9] rounded-2xl p-6 relative h-[calc(100vh-140px)] border border-gray-200 shadow-inner overflow-hidden flex flex-col">
+          <h2 className="text-lg font-bold mb-6 flex items-center gap-3 shrink-0 bg-[#F5F7F9] pb-4 z-10 border-b border-gray-200">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse shadow-lg shadow-blue-500/50"></span>
             Live Negotiation Trace
           </h2>
           
           {!loading && decision && decision.negotiation_trace ? (
-            <div className="flex flex-col h-full">
+            <div className="flex-1 flex flex-col min-h-0">
               {/* Stepper */}
-              <div className="relative ml-4 pl-8 border-l-2 border-gray-200 space-y-8 py-4">
+              <div className="relative ml-4 pl-8 border-l-2 border-gray-200 space-y-8 py-4 shrink-0">
                 {[
                   { title: "Parsing Constraints", icon: "" },
                   { title: "Consulting Ride APIs", icon: "" },
@@ -409,11 +428,11 @@ function ResultsContent() {
 
               {/* Rationale Bottom Box */}
               {traceVisibleIndex === 6 && (
-                <div className="mt-8">
+                <div className="mt-auto pt-8 flex-1 flex flex-col min-h-0">
                   <h3 className="text-xl font-bold mb-4 tracking-tight">Your RideFare coordinator agent has decided:</h3>
-                  <div className="p-6 bg-black text-white rounded-xl shadow-2xl transition-all duration-1000 opacity-100 transform translate-y-0">
+                  <div className="p-6 bg-black text-white rounded-xl shadow-2xl transition-all duration-1000 opacity-100 transform translate-y-0 flex-1 flex flex-col overflow-hidden">
                     <p className="font-bold text-xs mb-3 opacity-60 tracking-widest uppercase">Coordinator Rationale</p>
-                    <p className="text-[11px] font-medium leading-relaxed">{decision.rationale}</p>
+                    <p className="text-[14px] font-medium leading-relaxed">{decision.rationale}</p>
                   </div>
                 </div>
               )}
@@ -452,6 +471,30 @@ function ResultsContent() {
                   className="w-full py-4 bg-transparent text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   Close
+                </button>
+              </div>
+            ) : isConfirming ? (
+              <div className="text-center flex flex-col items-center py-6">
+                <h2 className="text-2xl font-bold mb-6 tracking-tight">Confirming Ride...</h2>
+                <p className="text-gray-500 mb-8 font-medium">Please wait while we connect you to a driver.</p>
+                <style>{`
+                  @keyframes fillProgress {
+                    from { width: 0%; }
+                    to { width: 100%; }
+                  }
+                `}</style>
+                <button 
+                  onClick={() => {
+                    setIsConfirming(false);
+                    setBookingStep("compare");
+                  }}
+                  className="w-full py-4 border-2 border-black text-black font-bold rounded-xl relative overflow-hidden group"
+                >
+                  <div 
+                    className="absolute left-0 top-0 h-full bg-gray-200" 
+                    style={{ animation: 'fillProgress 5s linear forwards' }}
+                  ></div>
+                  <span className="relative z-10 text-lg">Cancel</span>
                 </button>
               </div>
             ) : (
