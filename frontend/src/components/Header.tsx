@@ -74,57 +74,54 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white text-black rounded-3xl p-8 max-w-sm w-full shadow-2xl relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-            <h2 className="text-2xl font-bold mb-2 relative z-10">Sign in to RideFare</h2>
-            <p className="text-gray-500 text-sm mb-6 relative z-10">Sign in to book your ride and save your payment methods.</p>
-            
-            <form onSubmit={handleLogin} className="relative z-10 flex flex-col gap-4 mb-4">
-              {authError && <div className="text-red-500 text-sm font-medium">{authError}</div>}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
-                <input 
-                  type="email" 
-                  required
-                  value={authEmail}
-                  onChange={e => setAuthEmail(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                  placeholder="admin@ridefare.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                <input 
-                  type="password" 
-                  required
-                  value={authPassword}
-                  onChange={e => setAuthPassword(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                  placeholder="••••••••"
-                />
-              </div>
-              
-              <button 
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full mt-2 py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors shadow-lg disabled:opacity-50"
-              >
-                {isLoggingIn ? "Signing in..." : "Sign In"}
-              </button>
-            </form>
+    {/* Auth Modal */}
+    {showAuthModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="bg-white text-black rounded-3xl p-8 max-w-sm w-full border-[4px] border-black relative overflow-hidden">
+          <h2 className="text-2xl font-bold mb-2 relative z-10">Sign in to RideFare</h2>
+          <p className="text-gray-500 text-sm mb-6 relative z-10">Sign in to book your ride and save your payment methods.</p>
+          
+          <form onSubmit={handleLogin} className="relative z-10 flex flex-col gap-4 mb-4">
+            {authError && <div className="text-red-500 text-sm font-medium">{authError}</div>}
+            <div>
+              <label className="block text-sm font-bold text-black mb-1">Email</label>
+              <input 
+                type="email" 
+                required
+                value={authEmail}
+                onChange={e => setAuthEmail(e.target.value)}
+                className="w-full bg-[#F3F3F3] border-none rounded-lg p-4 text-base outline-none placeholder-gray-500 font-medium focus:ring-2 focus:ring-black transition-shadow"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-black mb-1">Password</label>
+              <input 
+                type="password" 
+                required
+                value={authPassword}
+                onChange={e => setAuthPassword(e.target.value)}
+                className="w-full bg-[#F3F3F3] border-none rounded-lg p-4 text-base outline-none placeholder-gray-500 font-medium focus:ring-2 focus:ring-black transition-shadow"
+              />
+            </div>
             
             <button 
-              onClick={() => setShowAuthModal(false)}
-              className="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors relative z-10"
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full mt-4 py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-transform active:scale-95 disabled:opacity-50 border-[2px] border-black"
             >
-              Cancel
+              {isLoggingIn ? "Signing in..." : "Sign In"}
             </button>
-          </div>
+          </form>
+          
+          <button 
+            onClick={() => setShowAuthModal(false)}
+            className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-100 transition-colors relative z-10 border-[2px] border-gray-300"
+          >
+            Cancel
+          </button>
         </div>
-      )}
-    </>
-  );
+      </div>
+    )}
+  </>
+);
 }
