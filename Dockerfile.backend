@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies (Playwright needs system deps, but for hackathon demo we might just skip the playwright install if it's too heavy, but let's include it)
+RUN apt-get update && apt-get install -y wget gnupg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN playwright install chromium
+RUN playwright install-deps
+
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Command to run
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

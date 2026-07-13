@@ -27,7 +27,7 @@ class LivePricingAgent:
                 # Go to Google Maps directions
                 page.goto(url, wait_until="domcontentloaded", timeout=15000)
                 # Wait for the distance to likely render
-                page.wait_for_timeout(4000) 
+                page.wait_for_timeout(500) 
                 page_text = page.inner_text("body")
                 browser.close()
         except Exception as e:

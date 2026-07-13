@@ -1,0 +1,34 @@
+name: Deploy to Alibaba Cloud SAS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.ALIBABA_SERVER_IP }}
+          username: ${{ secrets.ALIBABA_SERVER_USER }}
+          key: ${{ secrets.ALIBABA_SSH_KEY }}
+          script: |
+            # Navigate to the app directory (ensure you clone it here first on the server)
+            cd /opt/RideFare-Qwen || { echo "Project directory not found!"; exit 1; }
+            
+            # Pull the latest changes from GitHub
+            git pull origin main
+            
+            # Build and restart the containers
+            docker compose build
+            docker compose down
+            docker compose up -d
+            
+            echo "Deployment successful! The Qwen AI RideFare agents are live."

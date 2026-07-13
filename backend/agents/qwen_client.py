@@ -9,7 +9,7 @@ load_dotenv()
 def get_qwen_api_key():
     return os.environ.get("QWEN_API_KEY") or os.environ.get("DASHSCOPE_API_KEY")
 
-def call_qwen_json(prompt: str, system_prompt: str = "You are a helpful assistant.", model: str = "qwen-plus") -> Dict[str, Any]:
+def call_qwen_json(prompt: str, system_prompt: str = "You are a helpful assistant.", model: str = "qwen-turbo") -> Dict[str, Any]:
     api_key = get_qwen_api_key()
     if not api_key:
         raise ValueError("QWEN_API_KEY environment variable is not set.")
@@ -29,7 +29,7 @@ def call_qwen_json(prompt: str, system_prompt: str = "You are a helpful assistan
         "response_format": {"type": "json_object"}
     }
     
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
     
     if response.status_code != 200:
         raise RuntimeError(f"Qwen API error: {response.text}")
@@ -48,7 +48,7 @@ def call_qwen_json(prompt: str, system_prompt: str = "You are a helpful assistan
         
     return json.loads(content.strip())
 
-def call_qwen_with_tools(messages: list, tools: list, model: str = "qwen-plus") -> Dict[str, Any]:
+def call_qwen_with_tools(messages: list, tools: list, model: str = "qwen-turbo") -> Dict[str, Any]:
     """Native tool calling endpoint for Qwen."""
     api_key = get_qwen_api_key()
     if not api_key:
@@ -66,7 +66,7 @@ def call_qwen_with_tools(messages: list, tools: list, model: str = "qwen-plus") 
         "tools": tools
     }
     
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
     if response.status_code != 200:
         raise RuntimeError(f"Qwen API error: {response.text}")
         

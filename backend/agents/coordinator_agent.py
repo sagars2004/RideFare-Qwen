@@ -139,7 +139,7 @@ Constraints & Preferences:
 {constraint.model_dump_json()}
 """
         
-        response_dict = call_qwen_json(prompt=prompt, system_prompt=system_prompt, model="qwen-max")
+        response_dict = call_qwen_json(prompt=prompt, system_prompt=system_prompt, model="qwen-plus")
         
         # Robust LLM output coercion
         rank = response_dict.get("rank", [])

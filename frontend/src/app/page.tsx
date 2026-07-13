@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AutocompleteInput from "@/components/AutocompleteInput";
 import { HandWrittenTitle } from "@/components/ui/hand-writing-text";
+import Header from "@/components/Header";
 import { Clock, Search, MapPin, ChevronRight, Scale, Users, Bot, Zap, Filter, Car, Globe, Cpu } from "lucide-react";
 
 export default function Home() {
@@ -25,23 +26,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-black overflow-x-hidden flex flex-col">
       {/* Header */}
-      <header className="w-full bg-black text-white py-5 px-12 border-b border-gray-800">
-        <div className="max-w-[1300px] mx-auto flex items-center justify-between">
-          <span className="font-bold text-3xl tracking-tighter cursor-pointer">RideFare</span>
-          
-          <div className="flex items-center gap-12 text-lg font-medium text-gray-300">
-            <nav className="hidden md:flex gap-12">
-              <span className="hover:text-white cursor-pointer transition-colors">Features</span>
-              <span className="hover:text-white cursor-pointer transition-colors">How it Works</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Partners</span>
-            </nav>
-            <div className="hidden lg:flex items-center gap-8 pl-12 border-l border-gray-700">
-              <span className="flex items-center gap-2"><Globe size={20} /> EN • USD</span>
-              <span>Built by Sagar Sahu</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Hero Section */}
       <main className="max-w-[1300px] w-full mx-auto pt-10 px-6 pb-20 flex-1">

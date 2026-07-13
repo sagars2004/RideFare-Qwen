@@ -2,9 +2,10 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { User, Globe } from "lucide-react";
+import { ArrowLeft, MapPin, Search, Clock, CreditCard, Shield, User, Globe } from "lucide-react";
+import Header from "@/components/Header";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ResultsPage() {
   return (
@@ -34,9 +35,8 @@ function ResultsContent() {
   const [loadingTiers, setLoadingTiers] = useState(false);
   const [selectedTier, setSelectedTier] = useState<any>(null);
   
-  // Mock Auth State
-  const [user, setUser] = useState<any>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  // Auth State from Context
+  const { user, setShowAuthModal } = useAuth();
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
   // Helper for branded logos
@@ -77,12 +77,36 @@ function ResultsContent() {
         setLoading(false);
       }
     };
-    if (pickup || dropoff || specialRequests) {
+    
+    if (decision === null && (pickup || dropoff || specialRequests)) {
       fetchNegotiation();
-    } else {
+    } else if (!pickup && !dropoff && !specialRequests) {
       setLoading(false);
     }
-  }, [pickup, dropoff, specialRequests]);
+  }, [pickup, dropoff, specialRequests, decision, loading]);
+
+
+  const handleCheckout = async () => {
+    if (!user) return;
+    try {
+      await fetch("http://localhost:8000/api/user/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          provider: selectedProvider,
+          tier: selectedTier.name,
+          price: selectedTier.price,
+          pickup,
+          dropoff
+        })
+      });
+      setBookingSuccess(true);
+    } catch (e) {
+      console.error(e);
+      setBookingSuccess(true); // show success anyway for demo
+    }
+  };
 
   useEffect(() => {
     if (decision && !decision.detail) {
@@ -120,23 +144,7 @@ function ResultsContent() {
   return (
     <div className="min-h-screen bg-white font-sans text-black flex flex-col">
       {/* Sleek Header */}
-      <header className="w-full bg-black text-white py-5 px-12 border-b border-gray-800 shrink-0">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <Link href="/" className="font-bold text-3xl tracking-tighter cursor-pointer">RideFare</Link>
-          
-          <div className="flex items-center gap-12 text-lg font-medium text-gray-300">
-            <nav className="hidden md:flex gap-12">
-              <span className="hover:text-white cursor-pointer transition-colors">Features</span>
-              <span className="hover:text-white cursor-pointer transition-colors">How it Works</span>
-              <span className="hover:text-white cursor-pointer transition-colors">Partners</span>
-            </nav>
-            <div className="hidden lg:flex items-center gap-8 pl-12 border-l border-gray-700">
-              <span className="flex items-center gap-2"><Globe size={20} /> EN • USD</span>
-              <span>Built by Sagar Sahu</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-1 flex w-full max-w-[1400px] mx-auto p-6 gap-8">
         
@@ -359,7 +367,7 @@ function ResultsContent() {
         </div>
 
         {/* Right Column (Trace Log replacing Map) */}
-        <div className="flex-1 bg-[#F5F7F9] rounded-2xl p-6 relative h-[calc(100vh-120px)] border border-gray-200 shadow-inner overflow-y-auto">
+        <div className="flex-1 bg-[#F5F7F9] rounded-2xl p-6 relative h-[calc(100vh-140px)] border border-gray-200 shadow-inner overflow-hidden">
           <h2 className="text-lg font-bold mb-6 flex items-center gap-3 sticky top-0 bg-[#F5F7F9] pb-4 z-10 border-b border-gray-200">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse shadow-lg shadow-blue-500/50"></span>
             Live Negotiation Trace
@@ -405,7 +413,7 @@ function ResultsContent() {
                   <h3 className="text-xl font-bold mb-4 tracking-tight">Your RideFare coordinator agent has decided:</h3>
                   <div className="p-6 bg-black text-white rounded-xl shadow-2xl transition-all duration-1000 opacity-100 transform translate-y-0">
                     <p className="font-bold text-xs mb-3 opacity-60 tracking-widest uppercase">Coordinator Rationale</p>
-                    <p className="text-[15px] font-medium leading-relaxed">{decision.rationale}</p>
+                    <p className="text-[11px] font-medium leading-relaxed">{decision.rationale}</p>
                   </div>
                 </div>
               )}
@@ -421,33 +429,6 @@ function ResultsContent() {
         </div>
       </main>
 
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-            <h2 className="text-2xl font-bold mb-2 relative z-10">Sign in to RideFare</h2>
-            <p className="text-gray-500 text-sm mb-8 relative z-10">Create an account or sign in to save your payment methods.</p>
-            
-            <button 
-              onClick={() => {
-                setUser({ name: "Demo User", card: "Visa •••• 4242" });
-                setShowAuthModal(false);
-                setBookingStep("checkout");
-              }}
-              className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors mb-4 relative z-10 shadow-lg"
-            >
-              Continue as Demo User
-            </button>
-            <button 
-              onClick={() => setShowAuthModal(false)}
-              className="w-full py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors relative z-10"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Checkout/Booking Success Modal */}
       {bookingStep === "checkout" && (
@@ -462,9 +443,15 @@ function ResultsContent() {
                 <p className="text-gray-500 mb-8 font-medium">Your {selectedTier?.name} is on its way.</p>
                 <button 
                   onClick={() => window.location.reload()}
-                  className="w-full py-4 bg-gray-100 text-black font-bold rounded-xl hover:bg-gray-200 transition-colors shadow-sm"
+                  className="w-full py-4 bg-gray-100 text-black font-bold rounded-xl hover:bg-gray-200 transition-colors shadow-sm mb-3"
                 >
                   Book another ride
+                </button>
+                <button 
+                  onClick={() => router.push('/')}
+                  className="w-full py-4 bg-transparent text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Close
                 </button>
               </div>
             ) : (
@@ -479,14 +466,14 @@ function ResultsContent() {
                   <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                     <span className="text-gray-600 font-bold text-sm flex items-center gap-3">
                       <div className="bg-blue-600 text-white rounded px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider">Visa</div>
-                      {user?.card}
+                      •••• {user?.cc_last4}
                     </span>
                     <span className="text-blue-600 font-bold text-sm cursor-pointer hover:underline">Change</span>
                   </div>
                 </div>
                 
                 <button 
-                  onClick={() => setBookingSuccess(true)}
+                  onClick={handleCheckout}
                   className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg shadow-xl relative overflow-hidden group"
                 >
                   <span className="relative z-10">Pay ${selectedTier?.price.toFixed(2)}</span>
