@@ -23,11 +23,20 @@ jobs:
           script: |
             set -e
             
-            # Navigate to the app directory (ensure you clone it here first on the server)
-            cd /opt/RideFare-Qwen || { echo "Project directory not found!"; exit 1; }
+            # Ensure directory exists and navigate to it
+            mkdir -p /opt/RideFare-Qwen
+            cd /opt/RideFare-Qwen
             
-            # Pull the latest changes from GitHub
-            git pull origin main
+            # Initialize git if it's not already a repository
+            if [ ! -d ".git" ]; then
+              git init
+              # Use the built-in GITHUB_TOKEN to authenticate automatically
+              git remote add origin https://oauth2:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            fi
+            
+            # Pull the latest changes
+            git fetch origin main
+            git reset --hard origin/main
             
             # Build and restart the containers
             docker compose build
