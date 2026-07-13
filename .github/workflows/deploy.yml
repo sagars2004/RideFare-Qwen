@@ -19,6 +19,7 @@ jobs:
           host: ${{ secrets.ALIBABA_SERVER_IP }}
           username: ${{ secrets.ALIBABA_SERVER_USER }}
           key: ${{ secrets.ALIBABA_SSH_KEY }}
+          password: ${{ secrets.ALIBABA_SERVER_PASSWORD }}
           script: |
             # Navigate to the app directory (ensure you clone it here first on the server)
             cd /opt/RideFare-Qwen || { echo "Project directory not found!"; exit 1; }
