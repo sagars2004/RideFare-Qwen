@@ -154,6 +154,7 @@ Constraints & Preferences:
         return CoordinatorDecisionObject(
             recommended_provider=response_dict.get("recommended_provider", "uber"),
             rank=rank,
+            bids=bids,
             excluded=excluded,
             conflicts_detected=[ConflictDetected(**c) for c in conflicts_list],
             rationale=response_dict.get("rationale", ""),

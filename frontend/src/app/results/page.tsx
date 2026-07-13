@@ -24,10 +24,20 @@ function ResultsContent() {
   
   const [loading, setLoading] = useState(true);
   const [decision, setDecision] = useState<any>(null);
-  const [traceVisibleIndex, setTraceVisibleIndex] = useState(-1);
-  const [providerData, setProviderData] = useState<Record<string, any>>({});
+  const [traceVisibleIndex, setTraceVisibleIndex] = useState(0);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  
+  // New Booking State
+  const [bookingStep, setBookingStep] = useState<"compare" | "select_tier" | "checkout">("compare");
+  const [rideTiers, setRideTiers] = useState<any[]>([]);
+  const [loadingTiers, setLoadingTiers] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<any>(null);
+  
+  // Mock Auth State
+  const [user, setUser] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   // Helper for branded logos
   const getProviderLogo = (providerName: string, isExcluded: boolean = false) => {
@@ -42,17 +52,6 @@ function ResultsContent() {
     if (name === 'robotaxi') return <div className={`font-black tracking-tighter text-xl ${isExcluded ? 'text-gray-400' : 'text-gray-800'}`}>TESLA</div>;
     return <div className={`font-mono font-bold text-lg ${isExcluded ? 'text-gray-400' : 'text-gray-800'}`}>ROBO</div>;
   };
-
-  // Generate dynamic randomized prices/ETAs on mount
-  useEffect(() => {
-    setProviderData({
-      uber: { price: `$${(35 + Math.random() * 15).toFixed(2)}`, eta: `${Math.floor(2 + Math.random() * 6)} mins away`, capacity: 4, badge: "Popular" },
-      lyft: { price: `$${(30 + Math.random() * 15).toFixed(2)}`, eta: `${Math.floor(4 + Math.random() * 7)} mins away`, capacity: 4, badge: "Good deal" },
-      waymo: { price: `$${(45 + Math.random() * 20).toFixed(2)}`, eta: `${Math.floor(8 + Math.random() * 10)} mins away`, capacity: 4, badge: "Premium AV" },
-      robotaxi: { price: `$${(20 + Math.random() * 10).toFixed(2)}`, eta: `${Math.floor(12 + Math.random() * 15)} mins away`, capacity: 2, badge: "Cheapest" },
-      zoox: { price: `$${(30 + Math.random() * 10).toFixed(2)}`, eta: `${Math.floor(10 + Math.random() * 15)} mins away`, capacity: 4, badge: "Spacious AV" },
-    });
-  }, [pickup, dropoff]);
 
   useEffect(() => {
     const fetchNegotiation = async () => {
@@ -87,18 +86,36 @@ function ResultsContent() {
 
   useEffect(() => {
     if (decision && !decision.detail) {
-      const interval = setInterval(() => {
-        setTraceVisibleIndex((prev) => {
-          if (prev < 6) {
-            return prev + 1;
-          }
-          clearInterval(interval);
+      const timer = setInterval(() => {
+        setTraceVisibleIndex(prev => {
+          if (prev < 6) return prev + 1;
+          clearInterval(timer);
           return prev;
         });
-      }, 1500);
-      return () => clearInterval(interval);
+      }, 800);
+      return () => clearInterval(timer);
     }
   }, [decision]);
+
+  const handleRequestProvider = async (provider: string) => {
+    const bid = decision.bids?.find((b: any) => b.provider === provider);
+    if (!bid) return;
+    
+    setBookingStep("select_tier");
+    setLoadingTiers(true);
+    
+    try {
+      const res = await fetch(`http://localhost:8000/api/tiers?provider=${provider}&base_price=${bid.price_usd}&eta=${bid.eta_pickup_min}`);
+      const data = await res.json();
+      if (data.tiers) {
+        setRideTiers(data.tiers);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingTiers(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans text-black flex flex-col">
@@ -171,12 +188,72 @@ function ResultsContent() {
                 <h3 className="font-bold mb-2">Backend Error</h3>
                 <p className="text-sm">{decision.detail}</p>
               </div>
+            ) : bookingStep !== "compare" ? (
+             <div className="flex flex-col gap-4">
+                <button 
+                  onClick={() => { setBookingStep("compare"); setRideTiers([]); setSelectedTier(null); }}
+                  className="self-start text-sm font-bold text-gray-500 hover:text-black flex items-center gap-1 mb-2"
+                >
+                  &larr; Back to comparison
+                </button>
+                <div className="flex items-center gap-3 mb-2">
+                   <div className="w-[80px] h-[50px] shrink-0 relative flex items-center justify-center">
+                     {getProviderLogo(selectedProvider!)}
+                   </div>
+                   <h2 className="text-2xl font-bold capitalize">Choose your {selectedProvider === "robotaxi" ? "Tesla" : selectedProvider} ride</h2>
+                </div>
+                
+                {loadingTiers ? (
+                  <div className="flex flex-col items-center py-10">
+                    <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="font-bold animate-pulse text-gray-500">Qwen is generating dynamic tiers...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4 px-2 py-1">
+                    {rideTiers.map((tier, idx) => (
+                      <div 
+                        key={idx}
+                        onClick={() => setSelectedTier(tier)}
+                        className={`p-4 border-2 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${selectedTier?.name === tier.name ? 'border-black bg-white shadow-md scale-[1.02]' : 'border-transparent hover:bg-gray-50'}`}
+                      >
+                        <div className="flex flex-col gap-1">
+                           <div className="font-bold text-lg">{tier.name}</div>
+                           <div className="text-sm text-gray-500 flex items-center gap-2">
+                             <span className="font-semibold text-black">{tier.eta} mins away</span>
+                             <span>•</span>
+                             <span className="flex items-center"><User size={14} className="mr-0.5 stroke-[3]" />{tier.capacity}</span>
+                           </div>
+                           <div className="text-xs text-gray-400 font-medium mt-1">{tier.description}</div>
+                        </div>
+                        <div className="font-bold text-xl">${tier.price.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {selectedTier && !loadingTiers && (
+                   <div className="mt-4 pt-4 border-t border-gray-100 sticky bottom-0 bg-white pb-4 z-10">
+                     <button 
+                       onClick={() => user ? setBookingStep("checkout") : setShowAuthModal(true)}
+                       className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg shadow-lg relative overflow-hidden group"
+                     >
+                       <span className="relative z-10">Confirm {selectedTier.name}</span>
+                       <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                     </button>
+                   </div>
+                )}
+             </div>
             ) : decision?.rank ? (
               <div className="flex flex-col gap-4 px-2 py-1">
                 {/* Ranked Options */}
                 {decision.rank.map((provider: string, idx: number) => {
-                  const data = providerData[provider.toLowerCase()] || { price: "$40.00", eta: "10 mins away", capacity: 4, badge: "" };
+                  const bid = decision.bids?.find((b: any) => b.provider === provider);
                   const isSelected = selectedProvider === provider;
+                  
+                  const price = bid ? `$${bid.price_usd.toFixed(2)}` : "N/A";
+                  const eta = bid ? `${bid.eta_pickup_min} mins away` : "Unknown";
+                  const capacity = bid ? bid.capacity : 4;
+                  const badge = bid && bid.flags.length > 0 ? bid.flags[0].replace(/_/g, ' ') : "";
                   
                   return (
                     <div 
@@ -192,16 +269,16 @@ function ResultsContent() {
                         <div className="flex flex-col justify-center">
                           <p className="font-bold text-lg leading-tight capitalize">{provider === "robotaxi" ? "Tesla" : provider}</p>
                           <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                            <span className="text-black font-semibold">{data.eta}</span> • <span className="flex items-center"><User size={14} className="mr-0.5 stroke-[3]" />{data.capacity}</span>
+                            <span className="text-black font-semibold">{eta}</span> • <span className="flex items-center"><User size={14} className="mr-0.5 stroke-[3]" />{capacity}</span>
                           </p>
                         </div>
                       </div>
                       
                       <div className="flex flex-col items-end gap-1">
-                        <span className="font-bold text-xl">{data.price}</span>
-                        {data.badge && (
+                        <span className="font-bold text-xl">{price}</span>
+                        {badge && (
                           <span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600 tracking-wide uppercase">
-                            {data.badge}
+                            {badge}
                           </span>
                         )}
                       </div>
@@ -214,7 +291,8 @@ function ResultsContent() {
                    <div className="mt-2 pt-4 border-t border-gray-100">
                      <h3 className="text-[13px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">Excluded Options</h3>
                      {decision.excluded.map((exc: any) => {
-                       const data = providerData[exc.provider.toLowerCase()] || { price: "N/A", eta: "Unavailable", capacity: 0 };
+                       const bid = decision.bids?.find((b: any) => b.provider === exc.provider);
+                       const price = bid ? `$${bid.price_usd.toFixed(2)}` : "N/A";
                        return (
                          <div key={exc.provider} className="p-4 flex items-center justify-between opacity-50 bg-[#F9F9F9] rounded-xl mb-2">
                            <div className="flex items-center gap-4">
@@ -231,7 +309,7 @@ function ResultsContent() {
                              </div>
                            </div>
                            <div className="font-bold text-lg text-gray-400">
-                             {data.price}
+                             {price}
                            </div>
                          </div>
                        );
@@ -243,9 +321,11 @@ function ResultsContent() {
           </div>
           
           {/* Action Button at bottom of middle col */}
-          {!loading && decision && traceVisibleIndex === 6 && !decision.detail && decision.rank?.length > 0 && (
+          {!loading && decision && traceVisibleIndex === 6 && !decision.detail && decision.rank?.length > 0 && bookingStep === "compare" && (
             <div className="mt-6 pt-4 bg-white sticky bottom-0 border-t border-gray-100 flex gap-3 pb-4 relative">
-               <button className="flex-[2] py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg capitalize shadow-lg">
+               <button 
+                 onClick={() => handleRequestProvider(selectedProvider!)}
+                 className="flex-[2] py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg capitalize shadow-lg">
                  Request {selectedProvider}
                </button>
                <div className="flex-1 relative">
@@ -292,7 +372,6 @@ function ResultsContent() {
                 {[
                   { title: "Parsing Constraints", icon: "" },
                   { title: "Consulting Ride APIs", icon: "" },
-                  { title: "Consulting Autonomous Fleets", icon: "" },
                   { title: "Evaluating Safety Metrics", icon: "" },
                   { title: "Resolving Options", icon: "" },
                   { title: "Finalizing Coordinator Decision", icon: "" }
@@ -341,6 +420,89 @@ function ResultsContent() {
           ) : null}
         </div>
       </main>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+            <h2 className="text-2xl font-bold mb-2 relative z-10">Sign in to RideFare</h2>
+            <p className="text-gray-500 text-sm mb-8 relative z-10">Create an account or sign in to save your payment methods.</p>
+            
+            <button 
+              onClick={() => {
+                setUser({ name: "Demo User", card: "Visa •••• 4242" });
+                setShowAuthModal(false);
+                setBookingStep("checkout");
+              }}
+              className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors mb-4 relative z-10 shadow-lg"
+            >
+              Continue as Demo User
+            </button>
+            <button 
+              onClick={() => setShowAuthModal(false)}
+              className="w-full py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors relative z-10"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Checkout/Booking Success Modal */}
+      {bookingStep === "checkout" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            {bookingSuccess ? (
+              <div className="text-center flex flex-col items-center py-6">
+                <div className="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <h2 className="text-3xl font-bold mb-2 tracking-tight">Ride Confirmed!</h2>
+                <p className="text-gray-500 mb-8 font-medium">Your {selectedTier?.name} is on its way.</p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="w-full py-4 bg-gray-100 text-black font-bold rounded-xl hover:bg-gray-200 transition-colors shadow-sm"
+                >
+                  Book another ride
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <h2 className="text-2xl font-bold mb-6">Checkout</h2>
+                
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-8">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-gray-500 font-medium text-[15px]">Ride Total</span>
+                    <span className="font-bold text-2xl tracking-tight">${selectedTier?.price.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <span className="text-gray-600 font-bold text-sm flex items-center gap-3">
+                      <div className="bg-blue-600 text-white rounded px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider">Visa</div>
+                      {user?.card}
+                    </span>
+                    <span className="text-blue-600 font-bold text-sm cursor-pointer hover:underline">Change</span>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => setBookingSuccess(true)}
+                  className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg shadow-xl relative overflow-hidden group"
+                >
+                  <span className="relative z-10">Pay ${selectedTier?.price.toFixed(2)}</span>
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </button>
+                <button 
+                  onClick={() => setBookingStep("select_tier")}
+                  className="w-full py-4 mt-2 bg-transparent text-gray-500 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

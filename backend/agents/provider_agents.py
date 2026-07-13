@@ -12,13 +12,19 @@ class BaseProviderAgent(ABC):
 
 class UberAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
-        base_price = 15.0
-        # Surge multiplier: 1.0 (normal), 1.2 (moderate), 1.5 (high)
-        surge = random.choice([1.0, 1.2, 1.5])
-        price = base_price * surge
-        
-        eta_pickup = random.randint(2, 8)
-        eta_total = eta_pickup + 15
+        live = request_context.get("live_pricing", {})
+        if live:
+            base_price = live.get("uber_price", 15.0)
+            surge = live.get("surge_multiplier", 1.0)
+            price = base_price * surge
+            eta_pickup = random.randint(2, 6)
+            eta_total = eta_pickup + live.get("duration_minutes", 15)
+        else:
+            base_price = 15.0
+            surge = random.choice([1.0, 1.2, 1.5])
+            price = base_price * surge
+            eta_pickup = random.randint(2, 8)
+            eta_total = eta_pickup + 15
         
         flags = []
         if surge >= 1.5:
@@ -45,13 +51,20 @@ class UberAgent(BaseProviderAgent):
 
 class LyftAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
-        base_price = 14.5
-        # Deliberate conflict injection: sometimes Lyft is cheapest overall
-        multiplier = random.choice([0.9, 1.0, 1.3])
-        price = base_price * multiplier
-        
-        eta_pickup = random.randint(4, 10)
-        eta_total = eta_pickup + 15
+        live = request_context.get("live_pricing", {})
+        if live:
+            base_price = live.get("lyft_price", 14.5)
+            # Deliberate conflict injection: sometimes Lyft is cheaper
+            multiplier = random.choice([0.9, 1.0, 1.1]) * live.get("surge_multiplier", 1.0)
+            price = base_price * multiplier
+            eta_pickup = random.randint(3, 8)
+            eta_total = eta_pickup + live.get("duration_minutes", 15)
+        else:
+            base_price = 14.5
+            multiplier = random.choice([0.9, 1.0, 1.3])
+            price = base_price * multiplier
+            eta_pickup = random.randint(4, 10)
+            eta_total = eta_pickup + 15
         
         flags = []
         if multiplier < 1.0:
@@ -75,7 +88,8 @@ class LyftAgent(BaseProviderAgent):
 
 class WaymoAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
-        base_price = 16.0
+        live = request_context.get("live_pricing", {})
+        base_price = (live.get("distance_miles", 5.0) * 2.0) + (live.get("duration_minutes", 15) * 0.75) if live else 16.0
         
         # Conflict injection: stale quote
         is_stale = random.choice([True, False])
@@ -84,6 +98,7 @@ class WaymoAgent(BaseProviderAgent):
             timestamp -= timedelta(minutes=5)
             
         eta_pickup = random.randint(5, 12)
+        eta_total = eta_pickup + live.get("duration_minutes", 15) if live else eta_pickup + 15
         
         flags = ["av_provider"]
         if is_stale:
@@ -97,7 +112,7 @@ class WaymoAgent(BaseProviderAgent):
             provider="waymo",
             price_usd=round(base_price, 2),
             eta_pickup_min=eta_pickup,
-            eta_total_min=eta_pickup + 15,
+            eta_total_min=eta_total,
             vehicle_type="premium",
             capacity=4,
             confidence=0.95,
@@ -108,7 +123,8 @@ class WaymoAgent(BaseProviderAgent):
 
 class RobotaxiAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
-        base_price = 12.0
+        live = request_context.get("live_pricing", {})
+        base_price = (live.get("distance_miles", 5.0) * 1.5) + (live.get("duration_minutes", 15) * 0.4) if live else 12.0
         # Extremely volatile pricing
         price = base_price * random.choice([0.8, 1.0, 1.5])
         
@@ -138,12 +154,14 @@ class RobotaxiAgent(BaseProviderAgent):
 
 class ZooxAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
-        base_price = 18.0
+        live = request_context.get("live_pricing", {})
+        base_price = (live.get("distance_miles", 5.0) * 2.2) + (live.get("duration_minutes", 15) * 0.8) if live else 18.0
         price = base_price * random.choice([0.95, 1.05])
         eta_pickup = random.randint(10, 25)
+        eta_total = eta_pickup + live.get("duration_minutes", 15) if live else eta_pickup + 15
         return BidObject(
             provider="zoox", price_usd=round(price, 2), eta_pickup_min=eta_pickup,
-            eta_total_min=eta_pickup + 15, vehicle_type="premium", capacity=4,
+            eta_total_min=eta_total, vehicle_type="premium", capacity=4,
             confidence=0.85, flags=["av_provider", "spacious"], quote_timestamp=datetime.now(timezone.utc),
             agent_note="Zoox Agent: Premium spacious autonomous pod."
         )

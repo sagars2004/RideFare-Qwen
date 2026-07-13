@@ -40,6 +40,7 @@ class ConflictDetected(BaseModel):
 class CoordinatorDecisionObject(BaseModel):
     recommended_provider: str
     rank: List[str]
+    bids: List[BidObject] = Field(default_factory=list)
     excluded: List[ExcludedProvider] = Field(default_factory=list)
     conflicts_detected: List[ConflictDetected] = Field(default_factory=list)
     rationale: str
