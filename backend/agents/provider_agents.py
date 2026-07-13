@@ -13,14 +13,16 @@ class BaseProviderAgent(ABC):
 class UberAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
         live = request_context.get("live_pricing", {})
+        weather_surge = request_context.get("weather", {}).get("weather_surge_multiplier", 1.0)
+        
         if live:
-            base_price = live.get("uber_price", 15.0)
+            base_price = live.get("uber_price", 15.0) * weather_surge
             surge = live.get("surge_multiplier", 1.0)
             price = base_price * surge
             eta_pickup = random.randint(2, 6)
             eta_total = eta_pickup + live.get("duration_minutes", 15)
         else:
-            base_price = 15.0
+            base_price = 15.0 * weather_surge
             surge = random.choice([1.0, 1.2, 1.5])
             price = base_price * surge
             eta_pickup = random.randint(2, 8)
@@ -52,15 +54,16 @@ class UberAgent(BaseProviderAgent):
 class LyftAgent(BaseProviderAgent):
     def generate_bid(self, request_context: dict) -> BidObject:
         live = request_context.get("live_pricing", {})
+        weather_surge = request_context.get("weather", {}).get("weather_surge_multiplier", 1.0)
         if live:
-            base_price = live.get("lyft_price", 14.5)
+            base_price = live.get("lyft_price", 14.5) * weather_surge
             # Deliberate conflict injection: sometimes Lyft is cheaper
             multiplier = random.choice([0.9, 1.0, 1.1]) * live.get("surge_multiplier", 1.0)
             price = base_price * multiplier
             eta_pickup = random.randint(3, 8)
             eta_total = eta_pickup + live.get("duration_minutes", 15)
         else:
-            base_price = 14.5
+            base_price = 14.5 * weather_surge
             multiplier = random.choice([0.9, 1.0, 1.3])
             price = base_price * multiplier
             eta_pickup = random.randint(4, 10)

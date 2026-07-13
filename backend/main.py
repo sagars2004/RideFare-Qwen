@@ -36,7 +36,13 @@ def run_negotiation(req: NegotiationRequest):
             scraper = LivePricingAgent()
             live_pricing = scraper.fetch_live_pricing(pickup, dropoff)
             req.request_context["live_pricing"] = live_pricing
-        
+        # 1.75 Apply Weather Surge via Function Calling
+        if pickup:
+            from backend.agents.weather_agent import WeatherSurgeAgent
+            weather_agent = WeatherSurgeAgent()
+            weather_data = weather_agent.analyze_weather_surge(pickup)
+            req.request_context["weather"] = weather_data
+            
         # 2. Run coordination
         coordinator = CoordinatorAgent()
         decision = coordinator.negotiate(constraint=constraint_obj, request_context=req.request_context)
