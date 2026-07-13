@@ -27,6 +27,9 @@ jobs:
             mkdir -p /opt/RideFare-Qwen
             cd /opt/RideFare-Qwen
             
+            # Add safe directory exception to avoid dubious ownership errors
+            git config --global --add safe.directory /opt/RideFare-Qwen
+            
             # Initialize git if it's not already a repository
             if [ ! -d ".git" ]; then
               git init
