@@ -58,7 +58,7 @@ function ResultsContent() {
     const fetchNegotiation = async () => {
       const intent = `Pickup: ${pickup}. Dropoff: ${dropoff}. ${specialRequests}`;
       try {
-        const res = await fetch("http://localhost:8000/api/negotiate", {
+        const res = await fetch("/api/negotiate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
@@ -90,7 +90,7 @@ function ResultsContent() {
   const handleCheckout = async () => {
     if (!user) return;
     try {
-      await fetch("http://localhost:8000/api/user/bookings", {
+      await fetch("/api/user/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -141,7 +141,7 @@ function ResultsContent() {
     setLoadingTiers(true);
     
     try {
-      const res = await fetch(`http://localhost:8000/api/tiers?provider=${provider}&base_price=${bid.price_usd}&eta=${bid.eta_pickup_min}`);
+      const res = await fetch(`/api/tiers?provider=${provider}&base_price=${bid.price_usd}&eta=${bid.eta_pickup_min}`);
       const data = await res.json();
       if (data.tiers) {
         setRideTiers(data.tiers);

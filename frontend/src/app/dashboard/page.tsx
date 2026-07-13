@@ -20,8 +20,8 @@ export default function DashboardPage() {
       try {
         const email = "admin@ridefare.com";
         const [profRes, bookRes] = await Promise.all([
-          fetch(`http://localhost:8000/api/user/profile?email=${email}`),
-          fetch(`http://localhost:8000/api/user/bookings?email=${email}`)
+          fetch(`/api/user/profile?email=${email}`),
+          fetch(`/api/user/bookings?email=${email}`)
         ]);
         if (profRes.ok) setProfile(await profRes.json());
         if (bookRes.ok) setBookings((await bookRes.json()).bookings);

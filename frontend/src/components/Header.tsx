@@ -18,14 +18,14 @@ export default function Header() {
     setIsLoggingIn(true);
     setAuthError("");
     try {
-      const res = await fetch("http://localhost:8000/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authEmail, password: authPassword }),
       });
       if (res.ok) {
         const data = await res.json();
-        const profileRes = await fetch(`http://localhost:8000/api/user/profile?email=${data.email}`);
+        const profileRes = await fetch(`/api/user/profile?email=${data.email}`);
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           setUser({ ...profileData, email: data.email });
