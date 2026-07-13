@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import AutocompleteInput from "@/components/AutocompleteInput";
 import { HandWrittenTitle } from "@/components/ui/hand-writing-text";
+import { Clock, Search, MapPin, ChevronRight, Scale, Users, Bot, Zap, Filter, Car, Globe, Cpu } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -24,10 +25,26 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-black overflow-x-hidden flex flex-col">
       {/* Header */}
-      <header className="w-full py-6 px-12 font-bold text-3xl tracking-tighter">RideFare</header>
+      <header className="w-full bg-black text-white py-5 px-12 border-b border-gray-800">
+        <div className="max-w-[1300px] mx-auto flex items-center justify-between">
+          <span className="font-bold text-3xl tracking-tighter cursor-pointer">RideFare</span>
+          
+          <div className="flex items-center gap-12 text-lg font-medium text-gray-300">
+            <nav className="hidden md:flex gap-12">
+              <span className="hover:text-white cursor-pointer transition-colors">Features</span>
+              <span className="hover:text-white cursor-pointer transition-colors">How it Works</span>
+              <span className="hover:text-white cursor-pointer transition-colors">Partners</span>
+            </nav>
+            <div className="hidden lg:flex items-center gap-8 pl-12 border-l border-gray-700">
+              <span className="flex items-center gap-2"><Globe size={20} /> EN • USD</span>
+              <span>Built by Sagar Sahu</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
       {/* Main Hero Section */}
-      <main className="max-w-[1150px] w-full mx-auto pt-10 px-6 pb-20 flex-1">
+      <main className="max-w-[1300px] w-full mx-auto pt-10 px-6 pb-20 flex-1">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 h-full items-center">
           
           {/* Left Panel: Booking Form */}
@@ -40,8 +57,10 @@ export default function Home() {
                 <HandWrittenTitle title="RideFare." />
               </div>
             </div>
-            <p className="text-gray-500 text-[15px] mt-8 mb-8 leading-relaxed">
-              A multi-agent ride-hailing negotiation system that produces explainable, personalized ride recommendations using autonomous provider agents coordinated through competitive bid negotiation on Qwen Cloud.
+            <p className="text-gray-500 text-[15px] mt-8 mb-8 leading-relaxed max-w-[600px] relative z-10 pt-4">
+              Stop endlessly toggling between ride apps. RideFare's AI agents automatically negotiate 
+              with providers like Uber and Lyft in real-time to find your perfect ride based on price, 
+              ETA, and your personal preferences— so you don't have to endlessly hop between apps.
             </p>
             
             <div className="mb-6">
@@ -111,97 +130,140 @@ export default function Home() {
           </div>
 
           {/* Right Panel: Animated Map Graphic */}
-          <div className="hidden lg:flex flex-1 h-full items-center justify-end relative">
-            <div className="w-full max-w-[550px] aspect-square bg-[#F9F9F9] rounded-[40px] border-[8px] border-black relative overflow-hidden shadow-2xl flex items-center justify-center">
-              {/* City Grid */}
+          <div className="hidden lg:flex flex-1 h-full items-center justify-end relative pl-8">
+            <div className="w-full max-w-[750px] aspect-[4/3] bg-[#F5F5F5] rounded-[40px] border-[8px] border-black relative overflow-hidden shadow-2xl flex items-center justify-center">
+              
+              {/* Ultra-Clean Minimalist Grid Background */}
               <div className="absolute inset-0" style={{
-                backgroundImage: 'linear-gradient(#E5E5E5 2px, transparent 2px), linear-gradient(90deg, #E5E5E5 2px, transparent 2px)',
-                backgroundSize: '50px 50px',
-                backgroundPosition: '-2px -2px'
+                backgroundImage: 'linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)',
+                backgroundSize: '100px 100px',
+                backgroundPosition: '50px 50px'
               }}></div>
               
-              {/* Animated Routes */}
-              <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                {/* Main Route */}
-                <path d="M -50 150 L 150 150 L 150 350 L 300 350 L 300 100 L 450 100 L 450 450 L 600 450" fill="none" stroke="#000" strokeWidth="6" strokeLinejoin="round" />
-                <circle r="10" fill="#000">
-                  <animateMotion dur="14s" repeatCount="indefinite" path="M -50 150 L 150 150 L 150 350 L 300 350 L 300 100 L 450 100 L 450 450 L 600 450" />
-                </circle>
-
-                {/* Secondary Route */}
-                <path d="M 600 250 L 400 250 L 400 400 L 200 400 L 200 50 L -50 50" fill="none" stroke="#000" strokeWidth="4" strokeLinejoin="round" strokeDasharray="8 8" opacity="0.4" />
-                <circle r="6" fill="#000" opacity="0.6">
-                  <animateMotion dur="18s" repeatCount="indefinite" path="M 600 250 L 400 250 L 400 400 L 200 400 L 200 50 L -50 50" />
-                </circle>
-
-                {/* Third Route */}
-                <path d="M 250 -50 L 250 200 L 50 200 L 50 500 L -50 500" fill="none" stroke="#000" strokeWidth="4" strokeLinejoin="round" strokeDasharray="4 8" opacity="0.3" />
-                <circle r="5" fill="#000" opacity="0.5">
-                  <animateMotion dur="22s" repeatCount="indefinite" path="M 250 -50 L 250 200 L 50 200 L 50 500 L -50 500" />
-                </circle>
+              {/* Minimalist Map SVG */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 550 550" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 
-                {/* Fourth Route */}
-                <path d="M 550 50 L 350 50 L 350 300 L 100 300 L 100 600" fill="none" stroke="#000" strokeWidth="3" strokeLinejoin="round" strokeDasharray="6 6" opacity="0.3" />
-                <circle r="4" fill="#000" opacity="0.6">
-                  <animateMotion dur="16s" repeatCount="indefinite" path="M 550 50 L 350 50 L 350 300 L 100 300 L 100 600" />
-                </circle>
-                
-                {/* Fifth Route */}
-                <path d="M -50 550 L 500 550 L 500 200 L 600 200" fill="none" stroke="#000" strokeWidth="2" strokeLinejoin="round" opacity="0.5" />
-                <circle r="7" fill="#000" opacity="0.8">
-                  <animateMotion dur="20s" repeatCount="indefinite" path="M -50 550 L 500 550 L 500 200 L 600 200" />
-                </circle>
-
-                {/* Animated Location Hubs (Corners) */}
-                {[
-                  [150, 150], [150, 350], [300, 350], [300, 100], [450, 100], [450, 450],
-                  [400, 250], [400, 400], [200, 400], [200, 50], [250, 200], [50, 200],
-                  [50, 500], [350, 50], [350, 300], [100, 300], [500, 550], [500, 200]
-                ].map(([x, y], i) => (
-                  <g key={i} transform={`translate(${x}, ${y})`}>
-                    <circle r="6" fill="#000" />
-                    {i % 2 === 0 && (
-                      <rect x="-10" y="-10" width="20" height="20" fill="none" stroke="#000" strokeWidth="1.5" opacity="0.4">
-                        <animateTransform attributeName="transform" type="rotate" from="0" to="90" dur={`${3 + (i % 3)}s`} repeatCount="indefinite" />
-                      </rect>
-                    )}
-                  </g>
-                ))}
-                
-                {/* Ping Animations at key Hubs */}
-                <circle cx="150" cy="150" r="15" fill="none" stroke="#000" strokeWidth="2" opacity="0">
-                  <animate attributeName="opacity" values="0.6; 0; 0" dur="4s" repeatCount="indefinite" />
-                  <animate attributeName="r" values="6; 25; 25" dur="4s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="450" cy="100" r="15" fill="none" stroke="#000" strokeWidth="2" opacity="0">
-                  <animate attributeName="opacity" values="0; 0.6; 0" dur="5s" repeatCount="indefinite" />
-                  <animate attributeName="r" values="6; 30; 30" dur="5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx="300" cy="350" r="15" fill="none" stroke="#000" strokeWidth="2" opacity="0">
-                  <animate attributeName="opacity" values="0; 0; 0.6; 0" dur="6s" repeatCount="indefinite" />
-                  <animate attributeName="r" values="6; 6; 25; 25" dur="6s" repeatCount="indefinite" />
-                </circle>
-
-                {/* Central HQ / Main Data Hub at bottom center */}
-                <g transform="translate(275, 450)">
-                  {/* Connection lines to the network */}
-                  <path d="M 0 15 L 0 100" fill="none" stroke="#000" strokeWidth="2" strokeDasharray="4 4" opacity="0.5" />
-                  <path d="M 25 -100 L 25 -20" fill="none" stroke="#000" strokeWidth="2" strokeDasharray="4 4" opacity="0.5" />
+                {/* Defined Street Outlines (Base pass for borders, Top pass for inner streets) */}
+                <g strokeLinecap="round" strokeLinejoin="round" fill="none">
                   
-                  {/* Pulse behind */}
-                  <circle r="25" fill="#000" opacity="0">
-                    <animate attributeName="r" values="20; 40; 20" dur="3s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.15; 0; 0.15" dur="3s" repeatCount="indefinite" />
+                  {/* Border Pass */}
+                  <g stroke="#E0E0E0" strokeWidth="26">
+                    <path d="M 100 -50 L 100 200 L 300 200 L 300 450 L 600 450" />
+                    <path d="M 250 -50 L 250 100 L 450 100 L 450 600" />
+                    <path d="M -50 350 L 200 350 L 200 600" />
+                    <path d="M 50 -50 L 50 100 L 150 100 L 150 450 L -50 450" />
+                    <path d="M 350 300 L 500 300 L 500 -50" />
+                    <path d="M -50 200 L 100 200" />
+                    <path d="M 300 200 L 300 -50" />
+                    <path d="M 200 350 L 600 350" />
+                  </g>
+                  
+                  {/* Inner Street Pass */}
+                  <g stroke="#F8F8F8" strokeWidth="20">
+                    <path d="M 100 -50 L 100 200 L 300 200 L 300 450 L 600 450" />
+                    <path d="M 250 -50 L 250 100 L 450 100 L 450 600" />
+                    <path d="M -50 350 L 200 350 L 200 600" />
+                    <path d="M 50 -50 L 50 100 L 150 100 L 150 450 L -50 450" />
+                    <path d="M 350 300 L 500 300 L 500 -50" />
+                    <path d="M -50 200 L 100 200" />
+                    <path d="M 300 200 L 300 -50" />
+                    <path d="M 200 350 L 600 350" />
+                  </g>
+                </g>
+
+                {/* Dynamic Routing Paths & Vehicles */}
+                <g fill="none" strokeLinejoin="round">
+                  {/* Route 1 */}
+                  <path d="M 100 -50 L 100 200 L 300 200 L 300 450 L 600 450" stroke="#000" strokeWidth="4" />
+                  <circle r="6" fill="#000">
+                    <animateMotion dur="8s" repeatCount="indefinite" path="M 100 -50 L 100 200 L 300 200 L 300 450 L 600 450" />
+                  </circle>
+
+                  {/* Route 2 */}
+                  <path d="M 250 -50 L 250 100 L 450 100 L 450 600" stroke="#000" strokeWidth="3" strokeDasharray="8 6" opacity="0.6" />
+                  <circle r="5" fill="#000">
+                    <animateMotion dur="9s" repeatCount="indefinite" path="M 250 -50 L 250 100 L 450 100 L 450 600" />
+                  </circle>
+
+                  {/* Route 3 */}
+                  <path d="M -50 350 L 200 350 L 200 600" stroke="#000" strokeWidth="4" opacity="0.8" />
+                  <circle r="5" fill="#000">
+                    <animateMotion dur="6s" repeatCount="indefinite" path="M -50 350 L 200 350 L 200 600" />
+                  </circle>
+
+                  {/* Route 4 */}
+                  <path d="M 50 -50 L 50 100 L 150 100 L 150 450 L -50 450" stroke="#000" strokeWidth="2" opacity="0.3" />
+                  <circle r="4" fill="#000">
+                    <animateMotion dur="10s" repeatCount="indefinite" path="M 50 -50 L 50 100 L 150 100 L 150 450 L -50 450" />
+                  </circle>
+
+                  {/* Route 5 */}
+                  <path d="M 500 -50 L 500 300 L 350 300" stroke="#000" strokeWidth="3" strokeDasharray="4 4" opacity="0.5" />
+                  <circle r="6" fill="#000">
+                    <animateMotion dur="7s" repeatCount="indefinite" path="M 500 -50 L 500 300 L 350 300" />
+                  </circle>
+
+                  {/* Route 6 */}
+                  <path d="M 200 350 L 600 350" stroke="#000" strokeWidth="3" opacity="0.4" />
+                  <circle r="5" fill="#000">
+                    <animateMotion dur="5s" repeatCount="indefinite" path="M 200 350 L 600 350" />
                   </circle>
                   
-                  {/* Spinning outer square */}
-                  <rect x="-15" y="-15" width="30" height="30" fill="none" stroke="#000" strokeWidth="3">
-                    <animateTransform attributeName="transform" type="rotate" from="0" to="90" dur="5s" repeatCount="indefinite" />
+                  {/* High-speed straight lines */}
+                  <path d="M 300 200 L 300 -50" stroke="#000" strokeWidth="2" opacity="0.1" />
+                  <rect width="3" height="15" fill="#000" rx="1.5" opacity="0.5">
+                    <animateMotion dur="3s" repeatCount="indefinite" path="M 300 200 L 300 -50" />
                   </rect>
-
-                  {/* Inner static square */}
-                  <rect x="-8" y="-8" width="16" height="16" fill="#000" />
+                  <path d="M 100 200 L -50 200" stroke="#000" strokeWidth="2" opacity="0.1" />
+                  <rect width="15" height="3" fill="#000" rx="1.5" opacity="0.5">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 100 200 L -50 200" />
+                  </rect>
                 </g>
+
+                {/* Pristine Intersections / Nodes */}
+                
+                {/* Node: 100, 200 */}
+                <g transform="translate(100, 200)">
+                  <circle r="14" fill="#FFF" stroke="#E0E0E0" strokeWidth="2" />
+                  <circle r="6" fill="#000" />
+                </g>
+
+                {/* Node: 300, 200 */}
+                <g transform="translate(300, 200)">
+                  <circle r="22" fill="#FFF" stroke="#E0E0E0" strokeWidth="2" />
+                  <circle r="10" fill="none" stroke="#000" strokeWidth="2" strokeDasharray="3 3">
+                     <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="8s" repeatCount="indefinite" />
+                  </circle>
+                  <circle r="4" fill="#000" />
+                </g>
+
+                {/* Node: 450, 100 */}
+                <g transform="translate(450, 100)">
+                  <circle r="8" fill="#FFF" stroke="#000" strokeWidth="2" />
+                </g>
+
+                {/* Node: 200, 350 */}
+                <g transform="translate(200, 350)">
+                  <circle r="26" fill="none" stroke="#000" strokeWidth="1" opacity="0.1">
+                    <animate attributeName="r" values="10; 35; 10" dur="3s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.3; 0; 0.3" dur="3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle r="16" fill="#FFF" stroke="#E0E0E0" strokeWidth="2" />
+                  <circle r="6" fill="#000" />
+                </g>
+
+                {/* Node: 300, 450 */}
+                <g transform="translate(300, 450)">
+                  <circle r="12" fill="#FFF" stroke="#000" strokeWidth="3" />
+                  <circle r="3" fill="#000" />
+                </g>
+
+                {/* Node: 500, 300 */}
+                <g transform="translate(500, 300)">
+                  <circle r="18" fill="#000" />
+                  <circle r="6" fill="#FFF" />
+                </g>
+
               </svg>
             </div>
           </div>
@@ -209,31 +271,106 @@ export default function Home() {
 
         {/* Explore Section */}
         <div className="mt-24">
-          <h2 className="text-3xl font-bold mb-8 tracking-tight">Explore what you can do with RideFare</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="text-3xl font-bold mb-10 tracking-tight text-center">Explore what you can do with RideFare</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-[#F3F3F3] rounded-2xl p-6 h-48 relative overflow-hidden group cursor-pointer">
-              <h3 className="text-xl font-bold mb-2">Ride</h3>
-              <p className="text-sm text-gray-600 max-w-[180px]">Go anywhere with RideFare. Request a ride, hop in, and go.</p>
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform"></div>
+              <h3 className="text-xl font-bold mb-2">Autonomous Agents</h3>
+              <p className="text-sm text-gray-600 max-w-[180px]">Our AI agents negotiate directly with providers in real-time to secure the best possible fare.</p>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform flex items-center justify-center"><Bot size={40} className="text-gray-800" strokeWidth={1.5} /></div>
             </div>
             <div className="bg-[#F3F3F3] rounded-2xl p-6 h-48 relative overflow-hidden group cursor-pointer">
-              <h3 className="text-xl font-bold mb-2">Reserve</h3>
-              <p className="text-sm text-gray-600 max-w-[180px]">Reserve your ride in advance so you can relax on the day of your trip.</p>
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform"></div>
+              <h3 className="text-xl font-bold mb-2">Smart Trade-offs</h3>
+              <p className="text-sm text-gray-600 max-w-[180px]">Agents perfectly balance ETA, price, and vehicle type to match your exact travel preferences.</p>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform flex items-center justify-center"><Scale size={40} className="text-gray-800" strokeWidth={1.5} /></div>
             </div>
             <div className="bg-[#F3F3F3] rounded-2xl p-6 h-48 relative overflow-hidden group cursor-pointer">
-              <h3 className="text-xl font-bold mb-2">Rental Cars</h3>
-              <p className="text-sm text-gray-600 max-w-[180px]">Your perfect rental car is a few clicks away.</p>
-              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform"></div>
+              <h3 className="text-xl font-bold mb-2">Full Transparency</h3>
+              <p className="text-sm text-gray-600 max-w-[180px]">No black boxes. See exactly why a specific ride was chosen with clear, explainable reasoning.</p>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-gray-200 rounded-full group-hover:scale-110 transition-transform flex items-center justify-center"><Search size={40} className="text-gray-800" strokeWidth={1.5} /></div>
             </div>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div className="mt-32 relative">
+          <h2 className="text-3xl font-bold mb-16 tracking-tight text-center">Stop switching between different apps to find the best rideshare price.</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+            {/* Connecting Line (desktop only) */}
+            <div className="hidden md:block absolute top-[40px] left-[17%] right-[17%] h-[3px] bg-black">
+              {/* Animated Traveling Dot */}
+              <div 
+                className="absolute top-1/2 w-4 h-4 bg-black rounded-full shadow-lg"
+                style={{
+                  animation: 'travel-dot 3s infinite ease-in-out'
+                }}
+              ></div>
+              <style>{`
+                @keyframes travel-dot {
+                  0% { left: 0%; transform: translate(-50%, -50%); opacity: 0; }
+                  10% { opacity: 1; }
+                  90% { opacity: 1; }
+                  100% { left: 100%; transform: translate(-50%, -50%); opacity: 0; }
+                }
+              `}</style>
+            </div>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-black text-white rounded-2xl flex items-center justify-center mb-6 shadow-xl relative">
+                <span className="absolute -top-3 -right-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold border-4 border-white">1</span>
+                <MapPin size={32} />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Set your terms</h3>
+              <p className="text-gray-500 text-[15px] leading-relaxed max-w-[280px]">
+                Enter your pickup, dropoff, and any strict preferences like "Cheapest possible" or "Robotaxi only".
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-black text-white rounded-2xl flex items-center justify-center mb-6 shadow-xl relative">
+                <span className="absolute -top-3 -right-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold border-4 border-white">2</span>
+                <Cpu size={32} />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Agents negotiate</h3>
+              <p className="text-gray-500 text-[15px] leading-relaxed max-w-[280px]">
+                Our multi-agent system simultaneously queries rideshare APIs and autonomous fleets to find matches.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-black text-white rounded-2xl flex items-center justify-center mb-6 shadow-xl relative">
+                <span className="absolute -top-3 -right-3 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold border-4 border-white">3</span>
+                <Car size={32} />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Choose and ride</h3>
+              <p className="text-gray-500 text-[15px] leading-relaxed max-w-[280px]">
+                Review the transparent, ranked options and book your perfect ride with a single click.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Supported Providers Section */}
+        <div className="mt-24 mb-4">
+          <h2 className="text-3xl font-bold mb-12 tracking-tight text-center">Supported Mobility Providers</h2>
+          <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20">
+            {/* Uber Logo Typography */}
+            <div className="font-medium tracking-tighter text-4xl text-black">Uber</div>
+            {/* Lyft Logo Typography */}
+            <div className="font-bold tracking-tighter text-4xl text-[#FF00BF]">lyft</div>
+            {/* Waymo Logo Typography */}
+            <div className="font-bold tracking-widest text-3xl text-[#00A69C]">W<span className="text-xl">AYMO</span></div>
+            {/* Zoox */}
+            <div className="font-black tracking-widest text-3xl text-[#FF8A00]">ZOOX</div>
+            {/* Tesla */}
+            <div className="font-black tracking-tighter text-3xl text-gray-800">Robotaxi</div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
       <footer className="w-full bg-black text-white py-10 px-12 mt-auto">
-        <div className="max-w-[1150px] mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
-          <p className="font-medium tracking-wide">&copy; 2026 RideFare. Built on Qwen Cloud.</p>
+        <div className="max-w-[1300px] mx-auto flex flex-col md:flex-row justify-between items-center text-lg text-gray-300">
+          <p className="font-medium tracking-wide">&copy; 2026 RideFare. All Rights Reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0 font-medium">
             <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
             <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>

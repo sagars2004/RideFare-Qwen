@@ -2,7 +2,9 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
+import { User, Globe } from "lucide-react";
 
 export default function ResultsPage() {
   return (
@@ -24,6 +26,8 @@ function ResultsContent() {
   const [decision, setDecision] = useState<any>(null);
   const [traceVisibleIndex, setTraceVisibleIndex] = useState(-1);
   const [providerData, setProviderData] = useState<Record<string, any>>({});
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
 
   // Helper for branded logos
   const getProviderLogo = (providerName: string, isExcluded: boolean = false) => {
@@ -32,6 +36,10 @@ function ResultsContent() {
     if (name === 'uber') return <div className={`font-medium tracking-tighter text-2xl ${isExcluded ? 'text-gray-400' : 'text-black'}`}>Uber</div>;
     if (name === 'lyft') return <div className={`font-bold tracking-tighter text-2xl ${isExcluded ? 'text-gray-400' : 'text-[#FF00BF]'}`}>lyft</div>;
     if (name === 'waymo') return <div className={`font-bold tracking-widest text-lg ${isExcluded ? 'text-gray-400' : 'text-[#00A69C]'}`}>W<span className="text-sm">AYMO</span></div>;
+    if (name === 'cruise') return <div className={`font-bold tracking-tight text-2xl ${isExcluded ? 'text-gray-400' : 'text-[#FF5A00]'}`}>cruise</div>;
+    if (name === 'zoox') return <div className={`font-black tracking-widest text-xl ${isExcluded ? 'text-gray-400' : 'text-[#FF8A00]'}`}>ZOOX</div>;
+    if (name === 'revel') return <div className={`font-bold tracking-tighter text-2xl italic ${isExcluded ? 'text-gray-400' : 'text-[#005CFF]'}`}>Revel</div>;
+    if (name === 'robotaxi') return <div className={`font-black tracking-tighter text-xl ${isExcluded ? 'text-gray-400' : 'text-gray-800'}`}>TESLA</div>;
     return <div className={`font-mono font-bold text-lg ${isExcluded ? 'text-gray-400' : 'text-gray-800'}`}>ROBO</div>;
   };
 
@@ -41,7 +49,8 @@ function ResultsContent() {
       uber: { price: `$${(35 + Math.random() * 15).toFixed(2)}`, eta: `${Math.floor(2 + Math.random() * 6)} mins away`, capacity: 4, badge: "Popular" },
       lyft: { price: `$${(30 + Math.random() * 15).toFixed(2)}`, eta: `${Math.floor(4 + Math.random() * 7)} mins away`, capacity: 4, badge: "Good deal" },
       waymo: { price: `$${(45 + Math.random() * 20).toFixed(2)}`, eta: `${Math.floor(8 + Math.random() * 10)} mins away`, capacity: 4, badge: "Premium AV" },
-      robotaxi: { price: `$${(20 + Math.random() * 10).toFixed(2)}`, eta: `${Math.floor(12 + Math.random() * 15)} mins away`, capacity: 2, badge: "Cheapest" }
+      robotaxi: { price: `$${(20 + Math.random() * 10).toFixed(2)}`, eta: `${Math.floor(12 + Math.random() * 15)} mins away`, capacity: 2, badge: "Cheapest" },
+      zoox: { price: `$${(30 + Math.random() * 10).toFixed(2)}`, eta: `${Math.floor(10 + Math.random() * 15)} mins away`, capacity: 4, badge: "Spacious AV" },
     });
   }, [pickup, dropoff]);
 
@@ -59,6 +68,9 @@ function ResultsContent() {
         });
         const data = await res.json();
         setDecision(data);
+        if (data && data.rank && data.rank.length > 0) {
+          setSelectedProvider(data.rank[0]);
+        }
       } catch (err) {
         console.error(err);
         setDecision({ detail: "Failed to connect to backend." });
@@ -77,7 +89,7 @@ function ResultsContent() {
     if (decision && !decision.detail) {
       const interval = setInterval(() => {
         setTraceVisibleIndex((prev) => {
-          if (prev < 4) {
+          if (prev < 6) {
             return prev + 1;
           }
           clearInterval(interval);
@@ -90,13 +102,22 @@ function ResultsContent() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-black flex flex-col">
-      {/* Header */}
-      <header className="w-full py-4 px-8 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-50">
-        <Link href="/" className="font-bold text-2xl tracking-tighter hover:opacity-70 transition-opacity">RideFare</Link>
-        <div className="flex gap-6 font-medium text-[15px]">
-          <span className="border-b-2 border-black pb-1 cursor-pointer">Ride</span>
-          <span className="text-gray-500 hover:text-black cursor-pointer transition-colors">Rental Cars</span>
-          <span className="text-gray-500 hover:text-black cursor-pointer transition-colors">Activity</span>
+      {/* Sleek Header */}
+      <header className="w-full bg-black text-white py-5 px-12 border-b border-gray-800 shrink-0">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+          <Link href="/" className="font-bold text-3xl tracking-tighter cursor-pointer">RideFare</Link>
+          
+          <div className="flex items-center gap-12 text-lg font-medium text-gray-300">
+            <nav className="hidden md:flex gap-12">
+              <span className="hover:text-white cursor-pointer transition-colors">Features</span>
+              <span className="hover:text-white cursor-pointer transition-colors">How it Works</span>
+              <span className="hover:text-white cursor-pointer transition-colors">Partners</span>
+            </nav>
+            <div className="hidden lg:flex items-center gap-8 pl-12 border-l border-gray-700">
+              <span className="flex items-center gap-2"><Globe size={20} /> EN • USD</span>
+              <span>Built by Sagar Sahu</span>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -137,11 +158,10 @@ function ResultsContent() {
 
         {/* Middle Column (Results) */}
         <div className="flex-1 max-w-[450px] flex flex-col pr-8 border-r border-gray-100">
-          <h2 className="text-[32px] font-bold mb-1 tracking-tight">Choose a ride</h2>
-          <p className="text-sm text-gray-500 mb-6">Negotiated by multi-agent system</p>
+          <h2 className="text-[32px] font-bold mb-4 tracking-tight">Choose an option below:</h2>
           
           <div className="flex-1 overflow-y-auto">
-            {loading || (decision && traceVisibleIndex < 4) ? (
+            {loading || (decision && traceVisibleIndex < 6) ? (
               <div className="flex flex-col items-center justify-center h-48">
                  <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
                  <p className="font-bold animate-pulse">Agents Negotiating...</p>
@@ -152,37 +172,38 @@ function ResultsContent() {
                 <p className="text-sm">{decision.detail}</p>
               </div>
             ) : decision?.rank ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4 px-2 py-1">
                 {/* Ranked Options */}
                 {decision.rank.map((provider: string, idx: number) => {
                   const data = providerData[provider.toLowerCase()] || { price: "$40.00", eta: "10 mins away", capacity: 4, badge: "" };
+                  const isSelected = selectedProvider === provider;
                   
                   return (
-                    <div key={provider} className={`p-4 border-2 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${idx === 0 ? 'border-black bg-white shadow-sm' : 'border-transparent hover:bg-gray-50'}`}>
+                    <div 
+                      key={provider} 
+                      onClick={() => setSelectedProvider(provider)}
+                      className={`p-3.5 border-2 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${isSelected ? 'border-black bg-white shadow-md scale-[1.02]' : 'border-transparent hover:bg-gray-50'}`}
+                    >
                       <div className="flex items-center gap-4">
-                        {/* Car Icon Placeholder */}
-                        <div className="w-[70px] h-[50px] shrink-0 relative flex items-center justify-center">
+                        <div className="w-[60px] h-[40px] shrink-0 relative flex items-center justify-center">
                           {getProviderLogo(provider)}
                         </div>
                         
-                        <div className="flex flex-col">
-                          <div className="font-bold capitalize text-lg flex items-center gap-1.5">
-                            {provider}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                            <span className="text-sm">{data.capacity}</span>
-                          </div>
-                          <div className="text-[13px] text-gray-500 font-medium">
-                             {data.eta} • 1:35 PM
-                          </div>
-                          {idx === 0 ? (
-                            <div className="mt-1"><span className="bg-blue-600 text-white text-[11px] px-1.5 py-0.5 rounded font-bold">{data.badge}</span></div>
-                          ) : data.badge === "Cheapest" ? (
-                            <div className="mt-1"><span className="bg-green-600 text-white text-[11px] px-1.5 py-0.5 rounded font-bold">{data.badge}</span></div>
-                          ) : null}
+                        <div className="flex flex-col justify-center">
+                          <p className="font-bold text-lg leading-tight capitalize">{provider === "robotaxi" ? "Tesla" : provider}</p>
+                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                            <span className="text-black font-semibold">{data.eta}</span> • <span className="flex items-center"><User size={14} className="mr-0.5 stroke-[3]" />{data.capacity}</span>
+                          </p>
                         </div>
                       </div>
-                      <div className="font-bold text-lg">
-                        {data.price}
+                      
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="font-bold text-xl">{data.price}</span>
+                        {data.badge && (
+                          <span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600 tracking-wide uppercase">
+                            {data.badge}
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
@@ -222,20 +243,43 @@ function ResultsContent() {
           </div>
           
           {/* Action Button at bottom of middle col */}
-          {!loading && decision && traceVisibleIndex === 4 && !decision.detail && decision.rank?.length > 0 && (
-            <div className="mt-6 pt-4 bg-white sticky bottom-0 border-t border-gray-100 flex gap-3 pb-4">
+          {!loading && decision && traceVisibleIndex === 6 && !decision.detail && decision.rank?.length > 0 && (
+            <div className="mt-6 pt-4 bg-white sticky bottom-0 border-t border-gray-100 flex gap-3 pb-4 relative">
                <button className="flex-[2] py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors text-lg capitalize shadow-lg">
-                 Request {decision.rank[0]}
+                 Request {selectedProvider}
                </button>
-               <button className="flex-1 py-4 bg-white text-black border-2 border-black font-bold rounded-xl hover:bg-gray-50 transition-colors text-[15px] shadow-sm">
-                 Other options
-               </button>
+               <div className="flex-1 relative">
+                 <button 
+                   onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                   className="w-full py-4 bg-white text-black border-2 border-black font-bold rounded-xl hover:bg-gray-50 transition-colors text-[15px] shadow-sm"
+                 >
+                   Other options
+                 </button>
+                 
+                 {/* Drop-up Menu */}
+                 {showOptionsMenu && (
+                   <div className="absolute bottom-[110%] left-0 w-full mb-2 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden flex flex-col z-50">
+                     {decision.rank.filter((p: string) => p !== selectedProvider).map((p: string) => (
+                       <button 
+                         key={p}
+                         onClick={() => {
+                           setSelectedProvider(p);
+                           setShowOptionsMenu(false);
+                         }}
+                         className="p-4 text-left hover:bg-gray-50 font-bold capitalize border-b border-gray-100 last:border-0"
+                       >
+                         {p}
+                       </button>
+                     ))}
+                   </div>
+                 )}
+               </div>
             </div>
           )}
         </div>
 
         {/* Right Column (Trace Log replacing Map) */}
-        <div className="flex-1 bg-[#F5F7F9] rounded-2xl p-6 overflow-y-auto relative h-[calc(100vh-120px)] border border-gray-200 shadow-inner">
+        <div className="flex-1 bg-[#F5F7F9] rounded-2xl p-6 relative h-[calc(100vh-120px)] border border-gray-200 shadow-inner overflow-y-auto">
           <h2 className="text-lg font-bold mb-6 flex items-center gap-3 sticky top-0 bg-[#F5F7F9] pb-4 z-10 border-b border-gray-200">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse shadow-lg shadow-blue-500/50"></span>
             Live Negotiation Trace
@@ -249,16 +293,22 @@ function ResultsContent() {
                   { title: "Parsing Constraints", icon: "" },
                   { title: "Consulting Ride APIs", icon: "" },
                   { title: "Consulting Autonomous Fleets", icon: "" },
-                  { title: "Resolving Options", icon: "" }
+                  { title: "Evaluating Safety Metrics", icon: "" },
+                  { title: "Resolving Options", icon: "" },
+                  { title: "Finalizing Coordinator Decision", icon: "" }
                 ].map((step, idx) => {
                    const isActive = idx <= traceVisibleIndex;
                    const isCurrent = idx === traceVisibleIndex;
                    
                    return (
-                     <div key={idx} className={`relative transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}>
-                       <div className={`absolute -left-[43px] w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors duration-500 ${isActive ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'}`}>
-                         {isActive && !isCurrent ? "✓" : (idx + 1)}
-                       </div>
+                      <div key={idx} className={`relative transition-all duration-700 ${isActive ? 'opacity-100' : 'opacity-40'}`}>
+                        <div className={`absolute -left-[43px] w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors duration-500 ${isActive && !isCurrent ? 'bg-black text-white' : 'bg-gray-200'}`}>
+                          {isActive && !isCurrent ? (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          ) : (
+                            <div className="w-1.5 h-1.5 bg-black rounded-full"></div>
+                          )}
+                        </div>
                        <h3 className={`font-bold text-[15px] ${isActive ? 'text-black' : 'text-gray-500'}`}>{step.icon} {step.title}</h3>
                        {isCurrent && (
                           <div className="mt-2 text-[13px] text-gray-500 font-mono animate-pulse">
@@ -271,13 +321,16 @@ function ResultsContent() {
               </div>
 
               {/* Rationale Bottom Box */}
-              {traceVisibleIndex === 4 && (
-                <div className="mt-4 p-6 bg-black text-white rounded-xl shadow-2xl transition-all duration-1000 opacity-100 transform translate-y-0">
-                  <p className="font-bold text-xs mb-3 opacity-60 tracking-widest uppercase">Coordinator Rationale</p>
-                  <p className="text-[15px] font-medium leading-relaxed">{decision.rationale}</p>
+              {traceVisibleIndex === 6 && (
+                <div className="mt-8">
+                  <h3 className="text-xl font-bold mb-4 tracking-tight">Your RideFare coordinator agent has decided:</h3>
+                  <div className="p-6 bg-black text-white rounded-xl shadow-2xl transition-all duration-1000 opacity-100 transform translate-y-0">
+                    <p className="font-bold text-xs mb-3 opacity-60 tracking-widest uppercase">Coordinator Rationale</p>
+                    <p className="text-[15px] font-medium leading-relaxed">{decision.rationale}</p>
+                  </div>
                 </div>
               )}
-            </div>
+             </div>
           ) : loading ? (
              <div className="absolute inset-0 flex items-center justify-center opacity-50">
                <svg className="w-12 h-12 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">

@@ -134,3 +134,16 @@ class RobotaxiAgent(BaseProviderAgent):
             quote_timestamp=datetime.now(timezone.utc),
             agent_note=agent_note
         )
+
+
+class ZooxAgent(BaseProviderAgent):
+    def generate_bid(self, request_context: dict) -> BidObject:
+        base_price = 18.0
+        price = base_price * random.choice([0.95, 1.05])
+        eta_pickup = random.randint(10, 25)
+        return BidObject(
+            provider="zoox", price_usd=round(price, 2), eta_pickup_min=eta_pickup,
+            eta_total_min=eta_pickup + 15, vehicle_type="premium", capacity=4,
+            confidence=0.85, flags=["av_provider", "spacious"], quote_timestamp=datetime.now(timezone.utc),
+            agent_note="Zoox Agent: Premium spacious autonomous pod."
+        )
